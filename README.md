@@ -1,30 +1,16 @@
 
-# ST7789 Driver for MicroPython
+# ST7735S Driver for MicroPython
 
-This driver is based on [devbis' st7789_mpy driver.](https://github.com/devbis/st7789_mpy)
-I modified the original driver for one of my projects to add:
+This driver is a modified version of [russhughes' st7789_mpy driver.](https://github.com/russhughes/st7789_mpy/tree/master/st7789) All credits goes to russhughes for his amazing drivers!
 
-- Display Rotation.
-- Scrolling
-- Writing text using bitmaps converted from True Type fonts
-- Drawing text using 8 and 16-bit wide bitmap fonts
-- Drawing text using Hershey vector fonts
-- Drawing JPGs, including a SLOW mode to draw jpg's larger than available ram
-  using the TJpgDec - Tiny JPEG Decompressor R0.01d. from
-  http://elm-chan.org/fsw/tjpgd/00index.html
-- Drawing PNGs using the pngle library from https://github.com/kikuchan/pngle
-- Drawing and rotating Polygons and filled Polygons.
-- Tracking bounds
-- Custom init capability to support st7735, ili9341, ili9342 and other displays. See the examples/configs folder for M5Stack Core, M5Stack Core2, T-DONGLE-S3 and Wio_Terminal devices.
+I modified the original driver to specifically support the st7735s tft display sold by WeAct Studio. This display probably uses a pull-up resistor for the backlight. Sure, you can try to detect if the Pin is pulled-up and set the backlight accordingly, tho through my tests, this does not work reliably. So I wrote this driver seprately rather than issuing russhughes original repo. If your display has a pull-up resisotr for the backlight as well, and it happens to use st7735, ili9341, ili9342 and other common controllers, you can try your luck too.
 
-Included are 12 bitmap fonts derived from classic pc text mode fonts, 26
-Hershey vector fonts and several example programs for different devices.
+This driver supports all the features used in the examples, however, for some examples, you should compile your own firmware, since the firmware I provided does not contain all the fonts needed. Especially for rp2040 boards. I left out all the fonts because they only have 2MB storage. You really can not affort that much fonts frozen into the firmware, especially for the pico-w.
 
 ## Display Configuration
 
 Some displays may use a BGR color order or inverted colors. The `cfg_helper.py`
-program can be used to determine the color order, inversion_mode, colstart, and
-rowstart values needed for a display.
+program located in the examples can be used to determine the color order, inversion_mode, colstart, and rowstart values needed for a display.
 
 ### Color Modes
 
@@ -86,12 +72,9 @@ GENERIC-7789          | firmware.bin | Generic ESP32 devices
 GENERIC_SPIRAM-7789   | firmware.bin | Generic ESP32 devices with SPI Ram
 GENERIC_C3            | firmware.bin | Generic ESP32-C3 devices
 LOLIN_S2_MINI         | firmware.bin | Wemos S2 mini
-PYBV11                | firmware.dfu | Pyboard v1.1 (No PNG)
+Arduino_NANO_RP2040   | firmware.uf2 | Arduino nano RP2040 Connect
 RP2                   | firmware.uf2 | Raspberry Pi Pico RP2040
 RP2W                  | firmware.uf2 | Raspberry Pi PicoW RP2040
-T-DISPLAY             | firmware.bin | LILYGO® TTGO T-Display
-T-Watch-2020          | firmware.bin | LILYGO® T-Watch 2020
-WIO_TERMINAL          | firmware.bin | Seeed Wio Terminal
 
 
 ## Additional Modules
@@ -126,6 +109,8 @@ This is a work in progress.
   displays and for discovering issues compiling STM32 ports.
 
 -- Russ
+
+And am thankful to everyone metioned above and those who contributed to this project in any form!
 
 ## Overview
 
@@ -162,15 +147,12 @@ sudo apt-get -y install build-essential libffi-dev git pkg-config cmake virtuale
 
 ### Install a compatible esp-idf SDK
 
-The MicroPython README.md states: "The ESP-IDF changes quickly, and MicroPython
-only supports certain versions. Currently, MicroPython supports v4.0.2, v4.1.1,
-and v4.2 although other IDF v4 versions may also work."  I have had good luck
-using IDF v4.4
+Currently, MicroPython supports only v5.0.2 version of esp-idf. Well, at least I had no luck with any other versions. So I suggest you use the v5.0.2 version too.
 
 Clone the esp-idf SDK repo -- this usually takes several minutes.
 
 ```bash
-git clone -b v4.4 --recursive https://github.com/espressif/esp-idf.git
+git clone -b v5.0.2 --recursive https://github.com/espressif/esp-idf.git
 cd esp-idf/
 git pull
 ```
@@ -180,7 +162,7 @@ with MicroPython and update the submodules using:
 
 ```bash
 $ cd esp-idf
-$ git checkout v4.4
+$ git checkout v5.0.2
 $ git submodule update --init --recursive
 ```
 
@@ -208,7 +190,7 @@ git clone https://github.com/micropython/micropython.git
 Clone the st7789 driver repo.
 
 ```bash
-git clone https://github.com/russhughes/st7789_mpy.git
+git clone https://github.com/nspsck/st7735s_WeAct_Studio_TFT_port.git
 ```
 
 Update the git submodules and compile the MicroPython cross-compiler
@@ -220,6 +202,7 @@ cd mpy-cross/
 make
 cd ..
 cd ports/esp32
+make submodules
 ```
 
 Copy any .py files you want to include in the firmware as frozen python modules
@@ -231,9 +214,9 @@ firmware continuously reboots with an error.
 For example:
 
 ```bash
-cp ../../../st7789_mpy/fonts/bitmap/vga1_16x16.py modules
-cp ../../../st7789_mpy/fonts/truetype/NotoSans_32.py modules
-cp ../../../st7789_mpy/fonts/vector/scripts.py modules
+cp ../../../st7735s_WeAct_Studio_TFT_port/fonts/bitmap/vga1_16x16.py modules
+cp ../../../st7735s_WeAct_Studio_TFT_port/fonts/truetype/NotoSans_32.py modules
+cp ../../../st7735s_WeAct_Studio_TFT_port/fonts/vector/scripts.py modules
 ```
 
 Build the MicroPython firmware with the driver and frozen .py files in the
@@ -241,7 +224,7 @@ modules directory. If you did not add any .py files to the modules directory,
 you can leave out the FROZEN_MANIFEST and FROZEN_MPY_DIR settings.
 
 ```bash
-make USER_C_MODULES=../../../../st7789_mpy/st7789/micropython.cmake FROZEN_MANIFEST="" FROZEN_MPY_DIR=$UPYDIR/modules
+make USER_C_MODULES=../../../../st7735s_WeAct_Studio_TFT_port/st7789/micropython.cmake FROZEN_MANIFEST="" FROZEN_MPY_DIR=$UPYDIR/modules
 ```
 
 Erase and flash the firmware to your device. Set PORT= to the ESP32's usb
@@ -250,8 +233,8 @@ Subsystem (WSL2) for Linux. If you have the same issue, you can copy the
 firmware.bin file and use the Windows esptool.py to flash your device.
 
 ```bash
-make USER_C_MODULES=../../../../st7789_mpy/st7789/micropython.cmake PORT=/dev/ttyUSB0 erase
-make USER_C_MODULES=../../../../st7789_mpy/st7789/micropython.cmake PORT=/dev/ttyUSB0 deploy
+make USER_C_MODULES=../../../../st7735s_WeAct_Studio_TFT_port/st7789/micropython.cmake PORT=/dev/ttyUSB0 erase
+make USER_C_MODULES=../../../../st7735s_WeAct_Studio_TFT_port/st7789/micropython.cmake PORT=/dev/ttyUSB0 deploy
 ```
 
 The firmware.bin file will be in the build-GENERIC directory. To flash using
@@ -276,7 +259,7 @@ for ESP32:
 
 And then compile the module with specified USER_C_MODULES dir.
 
-    $ make USER_C_MODULES=../../../../st7789_mpy/st7789/micropython.cmake
+    $ make USER_C_MODULES=../../../../st7735s_WeAct_Studio_TFT_port/st7789/micropython.cmake
 
 for Raspberry Pi PICO:
 
@@ -284,7 +267,7 @@ for Raspberry Pi PICO:
 
 And then compile the module with specified USER_C_MODULES dir.
 
-    $ make USER_C_MODULES=../../../st7789_mpy/st7789/micropython.cmake
+    $ make USER_C_MODULES=../../../st7735s_WeAct_Studio_TFT_port/st7789/micropython.cmake
 
 ## Working examples
 
@@ -349,6 +332,7 @@ of the screen.
       240x240 | [(0x00, 240, 240,  0,  0), (0x60, 240, 240,  0,  0), (0xc0, 240, 240,  0, 80), (0xa0, 240, 240, 80,  0)]
       135x240 | [(0x00, 135, 240, 52, 40), (0x60, 240, 135, 40, 53), (0xc0, 135, 240, 53, 40), (0xa0, 240, 135, 40, 52)]
       128x160 | [(0x00, 128, 160,  0,  0), (0x60, 160, 128,  0,  0), (0xc0, 128, 160,  0,  0), (0xa0, 160, 128,  0,  0)]
+      132x162 | [(0x00, 132, 162,  0,  0), (0x60, 162, 132,  0,  0), (0xc0, 132, 162,  0,  0), (0xa0, 162, 132,  0,  0)]
       128x128 | [(0x00, 128, 128,  2,  1), (0x60, 128, 128,  1,  2), (0xc0, 128, 128,  2,  3), (0xa0, 128, 128,  3,  2)]
        other  | [(0x00, width, height, 0, 0)]
 
@@ -439,6 +423,8 @@ of the screen.
 - `sleep_mode(value)`
 
   If value is True, cause the display to enter sleep mode, otherwise wake up if value is False. During sleep display content may not be preserved.
+  
+  Changed: backlight will also be turned off and on, if you wish to keep the backlight on or off, please call `on()` or `off()` accordingly.
 
 
 - `fill(color)`
