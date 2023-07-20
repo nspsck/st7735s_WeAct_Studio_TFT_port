@@ -203,7 +203,7 @@ STATIC void set_window(st7789_ST7789_obj_t *self, uint16_t x0, uint16_t y0, uint
 }
 
 STATIC void fill_color_buffer(mp_obj_base_t *spi_obj, uint16_t color, int length) {
-    const int buffer_pixel_size = 128;
+    const int buffer_pixel_size = 132;
     int chunks = length / buffer_pixel_size;
     int rest = length % buffer_pixel_size;
     uint16_t color_swapped = _swap_bytes(color);
