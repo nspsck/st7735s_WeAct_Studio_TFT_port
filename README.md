@@ -24,6 +24,9 @@ This driver supports all the features used in the examples, however, for some ex
         use_drawbuffer=True) # False means to use the original version to draw
     ```
 
+## Firmware-updates:
+  -rp2040 only: added the POV module as a built-in module to control core voltage. For details please visit: [RP2040_Micropython_voltage_control](https://github.com/nspsck/RP2040_Micropython_voltage_control).
+
 ## Display Configuration
 
 Some displays may use a BGR color order or inverted colors. The `cfg_helper.py`
