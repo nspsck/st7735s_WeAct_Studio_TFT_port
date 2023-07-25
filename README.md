@@ -7,6 +7,23 @@ I modified the original driver to specifically support the st7735s tft display s
 
 This driver supports all the features used in the examples, however, for some examples, you should compile your own firmware, since the firmware I provided does not contain all the fonts needed. Especially for rp2040 boards. I left out all the fonts because they only have 2MB storage. You really can not affort that much fonts frozen into the firmware, especially for the pico-w.
 
+## Updates:
+  - Added an Option for you to use a static framebuffer for drawing. This can improve the performance in some cases. You can use it in the constructor like so:
+    ```python
+    st7789.ST7789(
+        SPI(1, baudrate=30000000, sck=Pin(36), mosi=Pin(35), miso=None),
+        132,
+        162,
+        reset=Pin(1, Pin.OUT),
+        cs=Pin(34, Pin.OUT),
+        dc=Pin(38, Pin.OUT),
+        backlight=Pin(6, Pin.OUT),
+        rotation=rotation,
+        options=options,
+        buffer_size= buffer_size,
+        use_drawbuffer=True) # False means to use the original version to draw
+    ```
+
 ## Display Configuration
 
 Some displays may use a BGR color order or inverted colors. The `cfg_helper.py`
