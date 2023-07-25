@@ -91,6 +91,11 @@ typedef struct _st7789_ST7789_obj_t {
     mp_file_t *fp;              // file object
     uint16_t *i2c_buffer;       // resident buffer if buffer_size given
 
+    // a buffer for the fast drawing method
+    size_t drawbuffer_size;
+    uint16_t *drawbuffer;
+    bool use_drawbuffer;
+
     // m_malloc'd pointers
     void *work;                 // work buffer for jpg & png decoding
     uint8_t *scanline_ringbuf;  // png scanline_ringbuf

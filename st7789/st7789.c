@@ -32,6 +32,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
+#include "py/gc.h"
 #include "py/obj.h"
 #include "py/objstr.h"
 #include "py/objmodule.h"
@@ -202,8 +203,8 @@ STATIC void set_window(st7789_ST7789_obj_t *self, uint16_t x0, uint16_t y0, uint
     write_cmd(self, ST7789_RAMWR, NULL, 0);
 }
 
-STATIC void fill_color_buffer(mp_obj_base_t *spi_obj, uint16_t color, int length) {
-    const int buffer_pixel_size = 132;
+STATIC void fill_color_buffer_slow(mp_obj_base_t *spi_obj, uint16_t color, int length) {
+    const int buffer_pixel_size = 162;
     int chunks = length / buffer_pixel_size;
     int rest = length % buffer_pixel_size;
     uint16_t color_swapped = _swap_bytes(color);
@@ -221,6 +222,27 @@ STATIC void fill_color_buffer(mp_obj_base_t *spi_obj, uint16_t color, int length
     }
     if (rest) {
         write_spi(spi_obj, (uint8_t *)buffer, rest * 2);
+    }
+}
+
+STATIC void fill_color_buffer_fast(st7789_ST7789_obj_t *self, mp_obj_base_t *spi_obj, uint16_t color, int length) {
+    uint16_t color_swapped = _swap_bytes(color);
+    uint16_t *buffer = self->drawbuffer;
+    uint32_t i = length;
+    while (i--) {
+        *buffer++ = color_swapped;
+    }
+    write_spi(spi_obj, (uint8_t *)self->drawbuffer, length * 2);
+}
+
+STATIC void fill_color_buffer(st7789_ST7789_obj_t *self, mp_obj_base_t *spi_obj, uint16_t color, int length) {
+    if (self->use_drawbuffer && self->drawbuffer == NULL) {
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("No drawbuffer available."));
+    }
+    if (self->use_drawbuffer && self->drawbuffer) {
+        fill_color_buffer_fast(self, spi_obj, color, length);
+    } else {
+        fill_color_buffer_slow(spi_obj, color, length);
     }
 }
 
@@ -267,7 +289,7 @@ void fast_hline(st7789_ST7789_obj_t *self, int16_t x, int16_t y, int16_t w, uint
                 set_window(self, x, y, x2, y);
                 DC_HIGH();
                 CS_LOW();
-                fill_color_buffer(self->spi_obj, color, w);
+                fill_color_buffer(self, self->spi_obj, color, w);
                 CS_HIGH();
             }
         }
@@ -296,7 +318,7 @@ STATIC void fast_vline(st7789_ST7789_obj_t *self, int16_t x, int16_t y, int16_t 
                 set_window(self, x, y, x, y2);
                 DC_HIGH();
                 CS_LOW();
-                fill_color_buffer(self->spi_obj, color, h);
+                fill_color_buffer(self, self->spi_obj, color, h);
                 CS_HIGH();
             }
         }
@@ -385,7 +407,7 @@ STATIC mp_obj_t st7789_ST7789_fill_rect(size_t n_args, const mp_obj_t *args) {
         set_window(self, x, y, right, bottom);
         DC_HIGH();
         CS_LOW();
-        fill_color_buffer(self->spi_obj, color, w * h);
+        fill_color_buffer(self, self->spi_obj, color, w * h);
         CS_HIGH();
     }
     return mp_const_none;
@@ -399,7 +421,7 @@ STATIC mp_obj_t st7789_ST7789_fill(mp_obj_t self_in, mp_obj_t _color) {
     set_window(self, 0, 0, self->width - 1, self->height - 1);
     DC_HIGH();
     CS_LOW();
-    fill_color_buffer(self->spi_obj, color, self->width * self->height);
+    fill_color_buffer(self, self->spi_obj, color, self->width * self->height);
     CS_HIGH();
 
     return mp_const_none;
@@ -2411,7 +2433,8 @@ mp_obj_t st7789_ST7789_make_new(const mp_obj_type_t *type,
         ARG_color_order,
         ARG_inversion,
         ARG_options,
-        ARG_buffer_size
+        ARG_buffer_size,
+        ARG_use_drawbuffer
     };
     static const mp_arg_t allowed_args[] = {
         {MP_QSTR_spi, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = MP_OBJ_NULL}},
@@ -2428,6 +2451,7 @@ mp_obj_t st7789_ST7789_make_new(const mp_obj_type_t *type,
         {MP_QSTR_inversion, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true}},
         {MP_QSTR_options, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0}},
         {MP_QSTR_buffer_size, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0}},
+        {MP_QSTR_use_drawbuffer, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false}}
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -2476,7 +2500,21 @@ mp_obj_t st7789_ST7789_make_new(const mp_obj_type_t *type,
     self->inversion = args[ARG_inversion].u_bool;
     self->options = args[ARG_options].u_int & 0xff;
     self->buffer_size = args[ARG_buffer_size].u_int;
+    self->use_drawbuffer = args[ARG_use_drawbuffer].u_bool;
 
+    if (self->use_drawbuffer) {
+        self->drawbuffer = gc_alloc(self->height * self->width * 2, 0);
+        if (self->drawbuffer == NULL) {
+            self->use_drawbuffer = false;
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Failed to allocate memory for drawbuffer."));
+        }
+        memset(self->drawbuffer, 0, self->drawbuffer_size);
+    } else {
+        self->drawbuffer = NULL;
+    }
+
+    // the 12c_buffer has nothing to do with the drawbuffer
+    // the 12c_buffer is not consistent but the drawbuffer is
     if (self->buffer_size) {
         self->i2c_buffer = m_malloc(self->buffer_size);
     } else {

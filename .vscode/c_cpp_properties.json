@@ -1,0 +1,17 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "C:/Users/tengj/Desktop/mpy/micropython"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ]
+        }
+    ],
+    "version": 4
+}
