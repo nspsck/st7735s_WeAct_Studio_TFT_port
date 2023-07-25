@@ -25,7 +25,7 @@ This driver supports all the features used in the examples, however, for some ex
     ```
 
 ## Firmware-updates:
-  -rp2040 only: added the POV module as a built-in module to control core voltage. For details please visit: [RP2040_Micropython_voltage_control](https://github.com/nspsck/RP2040_Micropython_voltage_control).
+  - rp2040 only: added the POV module as a built-in module to control core voltage. For details please visit: [RP2040_Micropython_voltage_control](https://github.com/nspsck/RP2040_Micropython_voltage_control).
 
 ## Display Configuration
 
