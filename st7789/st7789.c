@@ -823,7 +823,11 @@ STATIC mp_obj_t st7789_ST7789_write(size_t n_args, const mp_obj_t *args) {
 
     size_t buf_size = max_width * height * 2;
     if (self->buffer_size == 0) {
-        self->i2c_buffer = m_malloc(buf_size);
+        if (self->drawbuffer) {
+            self->i2c_buffer = self->drawbuffer;
+        } else {
+            self->i2c_buffer = m_malloc(buf_size);
+        }
     }
 
     // if fill is set, and background bitmap data is available copy the background
@@ -909,7 +913,7 @@ STATIC mp_obj_t st7789_ST7789_write(size_t n_args, const mp_obj_t *args) {
         }
     }
 
-    if (self->buffer_size == 0) {
+    if (self->buffer_size == 0 && self->drawbuffer_size == 0) {
         m_free(self->i2c_buffer);
     }
 
@@ -955,7 +959,11 @@ STATIC mp_obj_t st7789_ST7789_bitmap(size_t n_args, const mp_obj_t *args) {
 
     size_t buf_size = width * height * 2;
     if (self->buffer_size == 0) {
-        self->i2c_buffer = m_malloc(buf_size);
+        if (self->drawbuffer) {
+            self->i2c_buffer = self->drawbuffer;
+        } else {
+            self->i2c_buffer = m_malloc(buf_size);
+        }
     }
 
     size_t ofs = 0;
@@ -983,7 +991,7 @@ STATIC mp_obj_t st7789_ST7789_bitmap(size_t n_args, const mp_obj_t *args) {
         CS_HIGH();
     }
 
-    if (self->buffer_size == 0) {
+    if (self->buffer_size == 0 && self->drawbuffer_size == 0) {
         m_free(self->i2c_buffer);
     }
     return mp_const_none;
@@ -1052,7 +1060,11 @@ STATIC mp_obj_t st7789_ST7789_text(size_t n_args, const mp_obj_t *args) {
     size_t buf_size = width * height * 2;
 
     if (self->buffer_size == 0) {
-        self->i2c_buffer = m_malloc(buf_size);
+        if (self->drawbuffer) {
+            self->i2c_buffer = self->drawbuffer;
+        } else {
+            self->i2c_buffer = m_malloc(buf_size);
+        }
     }
 
     uint8_t chr;
@@ -1087,7 +1099,7 @@ STATIC mp_obj_t st7789_ST7789_text(size_t n_args, const mp_obj_t *args) {
                 x0 += width;
             }
         }
-        if (self->buffer_size == 0) {
+        if (self->buffer_size == 0 && self->drawbuffer_size == 0) {
             m_free(self->i2c_buffer);
         }
     }
@@ -1695,7 +1707,11 @@ STATIC mp_obj_t st7789_ST7789_jpg(size_t n_args, const mp_obj_t *args) {
             }
 
             if (self->buffer_size == 0) {
-                self->i2c_buffer = m_malloc(bufsize);
+                if (self->drawbuffer) {
+                    self->i2c_buffer = self->drawbuffer;
+                } else {
+                    self->i2c_buffer = m_malloc(bufsize);
+                }
             }
 
             if (!self->i2c_buffer) {
@@ -1717,7 +1733,7 @@ STATIC mp_obj_t st7789_ST7789_jpg(size_t n_args, const mp_obj_t *args) {
             } else {
                 mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("jpg decompress failed."));
             }
-            if (self->buffer_size == 0) {
+            if (self->buffer_size == 0 && self->drawbuffer_size == 0) {
                 m_free(self->i2c_buffer);           // Discard frame buffer
                 self->i2c_buffer = MP_OBJ_NULL;
             }
@@ -2002,7 +2018,7 @@ STATIC mp_obj_t st7789_ST7789_png(size_t n_args, const mp_obj_t *args) {
     }
 
     // free dynamic buffer
-    if (self->buffer_size == 0) {
+    if (self->buffer_size == 0 && self->drawbuffer_size == 0) {
         m_free(self->i2c_buffer);
         self->i2c_buffer = NULL;
     }
