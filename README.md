@@ -7,6 +7,9 @@ I modified the original driver to specifically support the st7735s tft display s
 
 This driver supports all the features used in the examples.
 
+## Known Issues:
+- The st7735 display from WeAct Studio has a 132x162 st7735s controller, however, the displays resolution is 128x160, which leads to the result, that the visible drawing area is from top left (2, 1) to bottom right (129, 160) in x-th pixel. For example: `tft.pixel(2, 0)` shows nothing on the display, but it's registered in the controllers frame memory. `tft.pixel(2, 1)` light up the the most top left pixel.
+
 ## Updates:
   - Added an Option for you to use a static framebuffer for drawing. This can improve the performance in some cases. You can use it in the constructor like so:
     ```python
