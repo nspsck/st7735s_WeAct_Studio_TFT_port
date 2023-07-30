@@ -226,9 +226,10 @@ STATIC void fill_color_buffer_slow(mp_obj_base_t *spi_obj, uint16_t color, int l
 }
 
 STATIC void fill_color_buffer_fast(st7789_ST7789_obj_t *self, mp_obj_base_t *spi_obj, uint16_t color, int length) {
-    uint16_t color_swapped = _swap_bytes(color);
-    uint16_t *buffer = self->drawbuffer;
-    uint32_t i = length;
+    uint32_t color_swapped = (uint32_t)_swap_bytes(color);
+    color_swapped = (color_swapped << 16) | color_swapped;
+    uint32_t *buffer = (uint32_t *)self->drawbuffer;
+    uint32_t i = (length + 1) / 2;
     while (i--) {
         *buffer++ = color_swapped;
     }
@@ -1340,6 +1341,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_vline_obj, 5, 5, st7789
 // Circle/Fill_Circle by https://github.com/c-logic
 // https://github.com/russhughes/st7789_mpy/pull/46
 // https://github.com/c-logic/st7789_mpy.git patch-1
+// new version is a reimplementation of https://www.geeksforgeeks.org/bresenhams-circle-drawing-algorithm/
 
 STATIC mp_obj_t st7789_ST7789_circle(size_t n_args, const mp_obj_t *args) {
     st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -1348,33 +1350,27 @@ STATIC mp_obj_t st7789_ST7789_circle(size_t n_args, const mp_obj_t *args) {
     mp_int_t r = mp_obj_get_int(args[3]);
     mp_int_t color = mp_obj_get_int(args[4]);
 
-    mp_int_t f = 1 - r;
-    mp_int_t ddF_x = 1;
-    mp_int_t ddF_y = -2 * r;
-    mp_int_t x = 0;
-    mp_int_t y = r;
+    int x = 0;
+    int y = r;
+    int p = 1 - r;
 
-    draw_pixel(self, xm, ym + r, color);
-    draw_pixel(self, xm, ym - r, color);
-    draw_pixel(self, xm + r, ym, color);
-    draw_pixel(self, xm - r, ym, color);
-    while (x < y) {
-        if (f >= 0) {
-            y -= 1;
-            ddF_y += 2;
-            f += ddF_y;
-        }
-        x += 1;
-        ddF_x += 2;
-        f += ddF_x;
+    while (x <= y) {
         draw_pixel(self, xm + x, ym + y, color);
-        draw_pixel(self, xm - x, ym + y, color);
         draw_pixel(self, xm + x, ym - y, color);
+        draw_pixel(self, xm - x, ym + y, color);
         draw_pixel(self, xm - x, ym - y, color);
         draw_pixel(self, xm + y, ym + x, color);
-        draw_pixel(self, xm - y, ym + x, color);
         draw_pixel(self, xm + y, ym - x, color);
+        draw_pixel(self, xm - y, ym + x, color);
         draw_pixel(self, xm - y, ym - x, color);
+
+        if (p < 0) {
+            p += 2 * x + 3;
+        } else {
+            p += 2 * (x - y) + 5;
+            y--;
+        }
+        x++;
     }
     return mp_const_none;
 }
@@ -1392,27 +1388,23 @@ STATIC mp_obj_t st7789_ST7789_fill_circle(size_t n_args, const mp_obj_t *args) {
     mp_int_t r = mp_obj_get_int(args[3]);
     mp_int_t color = mp_obj_get_int(args[4]);
 
-    mp_int_t f = 1 - r;
-    mp_int_t ddF_x = 1;
-    mp_int_t ddF_y = -2 * r;
-    mp_int_t x = 0;
-    mp_int_t y = r;
+    int x = 0;
+    int y = r;
+    int p = 1 - r;
 
-    fast_vline(self, xm, ym - y, 2 * y + 1, color);
+    while (x <= y) {
+        fast_vline(self, xm + x, ym - y, 2 * y, color);
+        fast_vline(self, xm - x, ym - y, 2 * y, color);
+        fast_vline(self, xm + y, ym - x, 2 * x, color);
+        fast_vline(self, xm - y, ym - x, 2 * x, color);
 
-    while (x < y) {
-        if (f >= 0) {
-            y -= 1;
-            ddF_y += 2;
-            f += ddF_y;
+        if (p < 0) {
+            p += 2 * x + 3;
+        } else {
+            p += 2 * (x - y) + 5;
+            y--;
         }
-        x += 1;
-        ddF_x += 2;
-        f += ddF_x;
-        fast_vline(self, xm + x, ym - y, 2 * y + 1, color);
-        fast_vline(self, xm + y, ym - x, 2 * x + 1, color);
-        fast_vline(self, xm - x, ym - y, 2 * y + 1, color);
-        fast_vline(self, xm - y, ym - x, 2 * x + 1, color);
+        x++;
     }
     return mp_const_none;
 }
