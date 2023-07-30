@@ -88,11 +88,11 @@
 //
 
 // { madctl, width, height, colstart, rowstart }
-st7789_rotation_t ORIENTATIONS_132x162[4] = {
-    {0x00, 132, 162, 0, 0},
-    {0x60, 162, 132, 0, 0},
-    {0xc0, 132, 162, 0, 0},
-    {0xa0, 162, 132, 0, 0}
+st7789_rotation_t ORIENTATIONS_128x160_WEACT_STUDIO[4] = {
+    {0x00, 128, 160, 2, 1},
+    {0x60, 160, 128, 1, 2},
+    {0xc0, 128, 160, 2, 1},
+    {0xa0, 160, 128, 1, 2}
 };
 
 
@@ -1137,7 +1137,7 @@ STATIC void set_rotation(st7789_ST7789_obj_t *self) {
         } else if (self->display_width == 128 && self->display_height == 128) {
             rotations = ORIENTATIONS_128x128;
         } else if (self->display_width == 132 && self->display_height == 162) {
-	    rotations = ORIENTATIONS_132x162;
+	    rotations = ORIENTATIONS_128x160_WEACT_STUDIO;
 	}
     }
 
