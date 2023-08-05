@@ -5,7 +5,7 @@ This driver is a modified version of [russhughes' st7789_mpy driver.](https://gi
 
 I modified the original driver to specifically support the st7735s tft display sold by WeAct Studio. This display probably uses a pull-up resistor for the backlight. If your display has a pull-up resisotr for the backlight as well, and it happens to use st7735, ili9341, ili9342 and other common controllers, you can try your luck too. For that you have to set the `reversed_backlight` to `True`. If the displayed colors are inverted, try set `inversion` to `False` (or `True`, well, default should be `True`). 
 
-This driver supports all the features used in the examples.
+This driver supports all the features the original has. Some performance enhancement and new features has been done. Please read [Updates](#updates).
 
 ## Known Issues:
 - The st7735 display from WeAct Studio has a 132x162 st7735s controller, however, the displays resolution is 128x160, which leads to the result, that the visible drawing area is from top left (2, 1) to bottom right (129, 160) in x-th pixel. For example: `tft.pixel(2, 0)` shows nothing on the display, but it's registered in the controllers frame memory. `tft.pixel(2, 1)` light up the the most top left pixel. This is fixed using the custom rotation table, for that automatically to take effect, you still have to set the resolution to 132x162, but use it as a 128x160 display. This result the `tft.height()` and `tft.width()` yelds `160` and `128` respectively. Please keep that in Mind.
@@ -19,7 +19,7 @@ rotations = (
 ```
 
 ## Updates:
-  - Added an Option for you to use a static framebuffer for drawing. This can improve the performance in some cases. You can use it in the constructor like so:
+  - Added an Option for you to use a static framebuffer for drawing. This can improve the performance in some cases (1 - 60%, i.e. repiditively bitmapping, drawing fucntions for a large area, etc.) in the cost, as you expect, RAM sacrifices. You can use it in the constructor like so:
     ```python
     st7789.ST7789(
         SPI(1, baudrate=30000000, sck=Pin(36), mosi=Pin(35), miso=None),
@@ -39,9 +39,11 @@ rotations = (
   - Now there is an option called `reversed_backlight`, if you set this to `True`, the "pull down displays" will work but the "pull up displays" won't, vice versa.
 
 ## Firmware-updates:
+Note: all firwares are compiled with the most recent micropython build at the time, if you want another version of micropython, please build it yourself following the build instruction provided below.
 - rp2040 only: added the POV module as a built-in module to control core voltage. For details please visit: [RP2040_Micropython_voltage_control](https://github.com/nspsck/RP2040_Micropython_voltage_control).
 - esp32 and rp2: added a `drawbuffer` for more stable, sometimes faster drawing. All other buffer related operations will no longer need to collect RAM if this option is enabled, hence improved performance.
 - now suppports all display supported by the original driver by default. Set `reversed_backlight` to `True` to use "pull down displays".
+- minor improvements on circle and fill_circle. (1-5% more performance depending on the situation) 
 
 ## Display Configuration
 
