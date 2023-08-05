@@ -3,7 +3,7 @@
 
 This driver is a modified version of [russhughes' st7789_mpy driver.](https://github.com/russhughes/st7789_mpy/tree/master/st7789) All credits goes to russhughes for his amazing drivers!
 
-I modified the original driver to specifically support the st7735s tft display sold by WeAct Studio. This display probably uses a pull-up resistor for the backlight. Sure, you can try to detect if the Pin is pulled-up and set the backlight accordingly, tho through my tests, this does not work reliably. So I wrote this driver seprately rather than issuing russhughes original repo. If your display has a pull-up resisotr for the backlight as well, and it happens to use st7735, ili9341, ili9342 and other common controllers, you can try your luck too.
+I modified the original driver to specifically support the st7735s tft display sold by WeAct Studio. This display probably uses a pull-up resistor for the backlight. If your display has a pull-up resisotr for the backlight as well, and it happens to use st7735, ili9341, ili9342 and other common controllers, you can try your luck too. For that you have to set the `reversed_backlight` to `True`. If the displayed colors are inverted, try set `inversion` to `False` (or `True`, well, default should be `True`). 
 
 This driver supports all the features used in the examples.
 
@@ -36,9 +36,12 @@ rotations = (
     ```
     The buffer should not be used togather with the `buffer_size` option. If only the `buffer_size` option is used and this option is not enabled, you can not profit from the faster drawing functions. If this option is enabled, a buffer of size `display->height * display-> width * 2` Bytes will be allocated, hence `buffer_size` and its related `i2c_buffer` will not have any effects but eating more RAM. Sometimes, the display's resolution is too high, so if the `drawbuffer` allocation fails, you can also jump back to the `buffer_size` option. 
 
+  - Now there is an option called `reversed_backlight`, if you set this to `True`, the "pull down displays" will work but the "pull up displays" won't, vice versa.
+
 ## Firmware-updates:
 - rp2040 only: added the POV module as a built-in module to control core voltage. For details please visit: [RP2040_Micropython_voltage_control](https://github.com/nspsck/RP2040_Micropython_voltage_control).
 - esp32 and rp2: added a `drawbuffer` for more stable, sometimes faster drawing. All other buffer related operations will no longer need to collect RAM if this option is enabled, hence improved performance.
+- now suppports all display supported by the original driver by default. Set `reversed_backlight` to `True` to use "pull down displays".
 
 ## Display Configuration
 

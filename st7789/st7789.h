@@ -95,6 +95,7 @@ typedef struct _st7789_ST7789_obj_t {
     size_t drawbuffer_size;
     uint16_t *drawbuffer;
     bool use_drawbuffer;
+    bool reversed_backlight;
 
     // m_malloc'd pointers
     void *work;                 // work buffer for jpg & png decoding

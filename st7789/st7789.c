@@ -81,6 +81,22 @@
         mp_hal_pin_write(self->reset, 1);   \
     }
 
+#define backlight_on() {                        \
+    if (self->reversed_backlight) {             \
+        mp_hal_pin_write(self->backlight, 0);   \
+    } else {                                    \
+        mp_hal_pin_write(self->backlight, 1);   \
+    }                                           \
+}
+
+#define backlight_off() {                       \
+    if (self->reversed_backlight) {             \
+        mp_hal_pin_write(self->backlight, 1);   \
+    } else {                                    \
+        mp_hal_pin_write(self->backlight, 0);   \
+    }                                           \
+}
+
 //
 // Default st7789 and st7735 display orientation tables
 // can be overridden during init(), madctl values
@@ -144,6 +160,7 @@ st7789_rotation_t ORIENTATIONS_128x128[4] = {
     {0xc0, 128, 128, 2, 3},
     {0xa0, 128, 128, 3, 2}
 };
+
 
 STATIC void write_spi(mp_obj_base_t *spi_obj, const uint8_t *buf, int len) {
     #ifdef MP_OBJ_TYPE_GET_SLOT
@@ -358,19 +375,20 @@ STATIC mp_obj_t st7789_ST7789_sleep_mode(mp_obj_t self_in, mp_obj_t value) {
     st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (mp_obj_is_true(value)) {
         if (self->backlight) {
-            mp_hal_pin_write(self->backlight, 1);
+            backlight_off();
         }
         write_cmd(self, ST7789_SLPIN, NULL, 0);
     } else {
         write_cmd(self, ST7789_SLPOUT, NULL, 0);
-	mp_hal_delay_ms(50);
+	    mp_hal_delay_ms(100);
         if (self->backlight) {
-            mp_hal_pin_write(self->backlight, 0);
+            backlight_on();
         }
     }
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(st7789_ST7789_sleep_mode_obj, st7789_ST7789_sleep_mode);
+
 
 STATIC mp_obj_t st7789_ST7789_inversion_mode(mp_obj_t self_in, mp_obj_t value) {
     st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -1281,7 +1299,7 @@ STATIC mp_obj_t st7789_ST7789_init(mp_obj_t self_in) {
     st7789_ST7789_fill_rect(6, args);
 
     if (self->backlight) {
-        mp_hal_pin_write(self->backlight, 0);
+        backlight_on();
     }
 
     return mp_const_none;
@@ -1292,7 +1310,7 @@ STATIC mp_obj_t st7789_ST7789_on(mp_obj_t self_in) {
     st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (self->backlight) {
-        mp_hal_pin_write(self->backlight, 0);
+        backlight_on();
         mp_hal_delay_ms(10);
     }
 
@@ -1304,7 +1322,7 @@ STATIC mp_obj_t st7789_ST7789_off(mp_obj_t self_in) {
     st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (self->backlight) {
-        mp_hal_pin_write(self->backlight, 1);
+        backlight_off();
         mp_hal_delay_ms(10);
     }
 
@@ -2442,7 +2460,8 @@ mp_obj_t st7789_ST7789_make_new(const mp_obj_type_t *type,
         ARG_inversion,
         ARG_options,
         ARG_buffer_size,
-        ARG_use_drawbuffer
+        ARG_use_drawbuffer,
+        ARG_reversed_backlight
     };
     static const mp_arg_t allowed_args[] = {
         {MP_QSTR_spi, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = MP_OBJ_NULL}},
@@ -2459,7 +2478,8 @@ mp_obj_t st7789_ST7789_make_new(const mp_obj_type_t *type,
         {MP_QSTR_inversion, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true}},
         {MP_QSTR_options, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0}},
         {MP_QSTR_buffer_size, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0}},
-        {MP_QSTR_use_drawbuffer, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false}}
+        {MP_QSTR_use_drawbuffer, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false}},
+        {MP_QSTR_reversed_backlight, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false}}
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -2509,6 +2529,7 @@ mp_obj_t st7789_ST7789_make_new(const mp_obj_type_t *type,
     self->options = args[ARG_options].u_int & 0xff;
     self->buffer_size = args[ARG_buffer_size].u_int;
     self->use_drawbuffer = args[ARG_use_drawbuffer].u_bool;
+    self->reversed_backlight = args[ARG_reversed_backlight].u_bool;
 
     if (self->use_drawbuffer) {
         self->drawbuffer = gc_alloc(self->height * self->width * 2, 0);
