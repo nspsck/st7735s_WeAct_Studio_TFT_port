@@ -221,7 +221,7 @@ STATIC void set_window(st7789_ST7789_obj_t *self, uint16_t x0, uint16_t y0, uint
 }
 
 STATIC void fill_color_buffer_slow(mp_obj_base_t *spi_obj, uint16_t color, int length) {
-    const int buffer_pixel_size = 162;
+    const int buffer_pixel_size = 160;
     int chunks = length / buffer_pixel_size;
     int rest = length % buffer_pixel_size;
     uint16_t color_swapped = _swap_bytes(color);
@@ -403,14 +403,7 @@ STATIC mp_obj_t st7789_ST7789_inversion_mode(mp_obj_t self_in, mp_obj_t value) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(st7789_ST7789_inversion_mode_obj, st7789_ST7789_inversion_mode);
 
-STATIC mp_obj_t st7789_ST7789_fill_rect(size_t n_args, const mp_obj_t *args) {
-    st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    mp_int_t x = mp_obj_get_int(args[1]);
-    mp_int_t y = mp_obj_get_int(args[2]);
-    mp_int_t w = mp_obj_get_int(args[3]);
-    mp_int_t h = mp_obj_get_int(args[4]);
-    mp_int_t color = mp_obj_get_int(args[5]);
-
+STATIC void fill_rect(st7789_ST7789_obj_t *self, int x, int y, int w, int h, uint16_t color) {
     uint16_t right = x + w - 1;
     uint16_t bottom = y + h - 1;
 
@@ -429,6 +422,17 @@ STATIC mp_obj_t st7789_ST7789_fill_rect(size_t n_args, const mp_obj_t *args) {
         fill_color_buffer(self, self->spi_obj, color, w * h);
         CS_HIGH();
     }
+}
+
+STATIC mp_obj_t st7789_ST7789_fill_rect(size_t n_args, const mp_obj_t *args) {
+    st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_int_t x = mp_obj_get_int(args[1]);
+    mp_int_t y = mp_obj_get_int(args[2]);
+    mp_int_t w = mp_obj_get_int(args[3]);
+    mp_int_t h = mp_obj_get_int(args[4]);
+    mp_int_t color = mp_obj_get_int(args[5]);
+
+    fill_rect(self, x, y, w, h, color);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_fill_rect_obj, 6, 6, st7789_ST7789_fill_rect);
@@ -533,6 +537,124 @@ STATIC mp_obj_t st7789_ST7789_line(size_t n_args, const mp_obj_t *args) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_line_obj, 6, 6, st7789_ST7789_line);
+
+STATIC void fill_bubble_rect(st7789_ST7789_obj_t *self, int xs, int ys, int w, int h, uint16_t color) {
+    if (xs + w >= self->width || ys + h >= self->height) {
+        return;
+    }
+    int bubble_size;
+    if (w < h) {
+        bubble_size = w / 4;
+    } else {
+        bubble_size = h / 4;
+    }
+
+    int xm = xs + bubble_size;
+    int ym = ys + bubble_size;
+    int x = 0;
+    int y = bubble_size;
+    int p = 1 - bubble_size;
+
+    if ((w < (bubble_size * 2)) | (h < (bubble_size * 2))){
+        return;
+    } else {
+        fill_rect(self, xs, ys + bubble_size, w, h - bubble_size * 2, color);
+    }
+
+    while (x <= y) {
+        // top left to right
+        fast_hline(self, xm - x, ym - y, w - bubble_size * 2 + x * 2, color);
+        fast_hline(self, xm - y, ym - x, w - bubble_size * 2 + y * 2, color);
+
+        // bottom left to right
+        fast_hline(self, xm - x, ym + h - bubble_size * 2 + y, w - bubble_size * 2 + x * 2, color);
+        fast_hline(self, xm - y, ym + h - bubble_size * 2 + x, w - bubble_size * 2 + y * 2, color);
+
+        if (p < 0) {
+            p += 2 * x + 3;
+        } else {
+            p += 2 * (x - y) + 5;
+            y -= 1;
+        } 
+        x += 1;
+    }
+}
+
+STATIC mp_obj_t st7789_ST7789_fill_bubble_rect(size_t n_args, const mp_obj_t *args_in) {
+    st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(args_in[0]);
+    int xs = mp_obj_get_int(args_in[1]);
+    int ys = mp_obj_get_int(args_in[2]);
+    int w = mp_obj_get_int(args_in[3]);
+    int h = mp_obj_get_int(args_in[4]);
+    uint16_t color = mp_obj_get_int(args_in[5]);
+
+    fill_bubble_rect(self, xs, ys, w, h, color);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_fill_bubble_rect_obj, 6, 6, st7789_ST7789_fill_bubble_rect);
+
+STATIC void bubble_rect(st7789_ST7789_obj_t *self, int xs, int ys, int w, int h, uint16_t color) {
+    int bubble_size;
+    if (w < h) {
+        bubble_size = w / 4;
+    } else {
+        bubble_size = h / 4;
+    }
+
+    int xm = xs + bubble_size;
+    int ym = ys + bubble_size;
+    int x = 0;
+    int y = bubble_size;
+    int p = 1 - bubble_size;
+
+    if ((w < (bubble_size * 2)) | (h < (bubble_size * 2))){
+        return;
+    } else {
+        fast_hline(self, xs + bubble_size, ys, w - bubble_size * 2, color);
+        fast_hline(self, xs + bubble_size, ys + h, w - bubble_size * 2, color);
+        fast_vline(self, xs, ys + bubble_size, h - bubble_size * 2, color);
+        fast_vline(self, xs + w, ys + bubble_size, h - bubble_size * 2, color);
+    }
+
+    while (x <= y){
+        // top left
+        draw_pixel(self, xm - x, ym - y, color);
+        draw_pixel(self, xm - y, ym - x, color);
+
+        // top right
+        draw_pixel(self, xm + w - bubble_size * 2 + x, ym - y, color);
+        draw_pixel(self, xm + w - bubble_size * 2 + y, ym - x, color);
+
+        // bottom left
+        draw_pixel(self, xm - x, ym + h - bubble_size * 2 + y, color);
+        draw_pixel(self, xm - y, ym + h - bubble_size * 2 + x, color);
+
+        // bottom right
+        draw_pixel(self, xm + w - bubble_size * 2 + x, ym + h - bubble_size * 2 + y, color);
+        draw_pixel(self, xm + w - bubble_size * 2 + y, ym + h - bubble_size * 2 + x, color);
+
+        if (p < 0) {
+            p += 2 * x + 3;
+        } else {
+            p += 2 * (x - y) + 5;
+            y -= 1;
+        }
+        x += 1;
+    }
+}
+
+STATIC mp_obj_t st7789_ST7789_bubble_rect(size_t n_args, const mp_obj_t *args_in) {
+    st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(args_in[0]);
+    int xs = mp_obj_get_int(args_in[1]);
+    int ys = mp_obj_get_int(args_in[2]);
+    int w = mp_obj_get_int(args_in[3]);
+    int h = mp_obj_get_int(args_in[4]);
+    uint16_t color = mp_obj_get_int(args_in[5]);
+
+    bubble_rect(self, xs, ys, w, h, color);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_bubble_rect_obj, 6, 6, st7789_ST7789_bubble_rect);
 
 STATIC mp_obj_t st7789_ST7789_blit_buffer(size_t n_args, const mp_obj_t *args) {
     st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -2389,6 +2511,8 @@ STATIC const mp_rom_map_elem_t st7789_ST7789_locals_dict_table[] = {
     {MP_ROM_QSTR(MP_QSTR_off), MP_ROM_PTR(&st7789_ST7789_off_obj)},
     {MP_ROM_QSTR(MP_QSTR_pixel), MP_ROM_PTR(&st7789_ST7789_pixel_obj)},
     {MP_ROM_QSTR(MP_QSTR_line), MP_ROM_PTR(&st7789_ST7789_line_obj)},
+    {MP_ROM_QSTR(MP_QSTR_bubble_rect), MP_ROM_PTR(&st7789_ST7789_bubble_rect_obj)},
+    {MP_ROM_QSTR(MP_QSTR_fill_bubble_rect), MP_ROM_PTR(&st7789_ST7789_fill_bubble_rect_obj)},
     {MP_ROM_QSTR(MP_QSTR_blit_buffer), MP_ROM_PTR(&st7789_ST7789_blit_buffer_obj)},
     {MP_ROM_QSTR(MP_QSTR_draw), MP_ROM_PTR(&st7789_ST7789_draw_obj)},
     {MP_ROM_QSTR(MP_QSTR_draw_len), MP_ROM_PTR(&st7789_ST7789_draw_len_obj)},
