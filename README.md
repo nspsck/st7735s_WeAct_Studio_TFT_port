@@ -52,7 +52,7 @@ esptool.py --chip esp32c3 --port PORT_TO_YOUR_DEVICE --baud 460800 write_flash -
 ```
 For esp32 and esp32s2, the `bootloader.bin` starts from `0x1000`.
 ```shell
-esptool.py --chip esp32c3 --port PORT_TO_YOUR_DEVICE --baud 460800 write_flash -z 0x1000 .\bootloader.bin 0x8000 .\partition-table.bin 0x10000 .\micropython.bin
+esptool.py --chip esp32s2 --port PORT_TO_YOUR_DEVICE --baud 460800 write_flash -z 0x1000 .\bootloader.bin 0x8000 .\partition-table.bin 0x10000 .\micropython.bin
 ```
 
 ## Display Configuration
