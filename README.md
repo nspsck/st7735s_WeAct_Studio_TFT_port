@@ -38,12 +38,22 @@ rotations = (
 
   - Now there is an option called `reversed_backlight`, if you set this to `True`, the "pull down displays" will work but the "pull up displays" won't, vice versa.
 
-## Firmware-updates:
+## Firmware-updates
 Note: all firwares are compiled with the most recent micropython build at the time, if you want another version of micropython, please build it yourself following the build instruction provided below.
 - rp2040 only: added the POV module as a built-in module to control core voltage. For details please visit: [RP2040_Micropython_voltage_control](https://github.com/nspsck/RP2040_Micropython_voltage_control).
 - esp32 and rp2: added a `drawbuffer` for more stable, sometimes faster drawing. All other buffer related operations will no longer need to collect RAM if this option is enabled, hence improved performance.
 - now suppports all display supported by the original driver by default. Set `reversed_backlight` to `True` to use "pull down displays".
 - minor improvements on circle and fill_circle. (1-5% more performance depending on the situation) 
+- added firmwares compiled with the newest micropython version. (added 2 new functions: `fill_bubble_rect, bubble_rect`)
+### How to use the new firmwares on ESP32
+For esp32c3 and esp32s3, the `bootloader.bin` starts from `0x0`.
+```shell
+esptool.py --chip esp32c3 --port PORT_TO_YOUR_DEVICE --baud 460800 write_flash -z 0x0 .\bootloader.bin 0x8000 .\partition-table.bin 0x10000 .\micropython.bin
+```
+For esp32 and esp32s2, the `bootloader.bin` starts from `0x1000`.
+```shell
+esptool.py --chip esp32c3 --port PORT_TO_YOUR_DEVICE --baud 460800 write_flash -z 0x1000 .\bootloader.bin 0x8000 .\partition-table.bin 0x10000 .\micropython.bin
+```
 
 ## Display Configuration
 
@@ -495,6 +505,14 @@ of the screen.
 - `fill_rect(x, y, width, height, color)`
 
   Fill a rectangle starting from (`x`, `y`) coordinates
+
+  - `bubble_rect(x, y, width, height, color)`
+
+  Draw a pop-up message box style box starting from (`x`, `y`) coordinates
+
+  - `fill_bubble_rect(x, y, width, height, color)`
+
+  Fill a a pop-up message box style box starting from (`x`, `y`) coordinates
 
 - `circle(x, y, r, color)`
 
