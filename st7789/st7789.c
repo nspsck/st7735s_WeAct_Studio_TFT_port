@@ -2656,7 +2656,8 @@ mp_obj_t st7789_ST7789_make_new(const mp_obj_type_t *type,
     self->reversed_backlight = args[ARG_reversed_backlight].u_bool;
 
     if (self->use_drawbuffer) {
-        self->drawbuffer = gc_alloc(self->height * self->width * 2, 0);
+        self->drawbuffer_size = self->height * self->width * 2;
+        self->drawbuffer = gc_alloc(self->drawbuffer_size, 0);
         if (self->drawbuffer == NULL) {
             self->use_drawbuffer = false;
             mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Failed to allocate memory for drawbuffer."));
