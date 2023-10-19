@@ -112,17 +112,17 @@ The firmware directory contains pre-compiled firmware for various devices with
 the st7789 C driver and frozen python font files. See the README.md file in the
 fonts folder for more information on the font files.
 
-MicroPython MicroPython v1.20.0 compiled with ESP IDF v4.4.4 using CMake
+MicroPython v1.21.0+ compiled with ESP IDF v5.0.2 using CMake
 
-Directory             | File         | Device
---------------------- | ------------ | ----------------------------------
-GENERIC-7789          | firmware.bin | Generic ESP32 devices
-GENERIC_SPIRAM-7789   | firmware.bin | Generic ESP32 devices with SPI Ram
-GENERIC_C3            | firmware.bin | Generic ESP32-C3 devices
-LOLIN_S2_MINI         | firmware.bin | Wemos S2 mini
-Arduino_NANO_RP2040   | firmware.uf2 | Arduino nano RP2040 Connect
-RP2                   | firmware.uf2 | Raspberry Pi Pico RP2040
-RP2W                  | firmware.uf2 | Raspberry Pi PicoW RP2040
+Directory             | File            | Device
+--------------------- | --------------- | ----------------------------------
+GENERIC-7789          | micropython.bin | Generic ESP32 devices
+GENERIC_SPIRAM-7789   | micropython.bin | Generic ESP32 devices with SPI Ram
+GENERIC_C3            | micropython.bin | Generic ESP32-C3 devices
+LOLIN_S2_MINI         | micropython.bin | Wemos S2 mini
+Arduino_NANO_RP2040   | firmware.uf2    | Arduino nano RP2040 Connect
+RP2                   | firmware.uf2    | Raspberry Pi Pico RP2040
+RP2W                  | firmware.uf2    | Raspberry Pi PicoW RP2040
 
 
 ## Additional Modules
