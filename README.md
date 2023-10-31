@@ -19,6 +19,7 @@ rotations = (
 ```
 
 ## Updates:
+  - Added support for Micropython v1.22+
   - Added an Option for you to use a static framebuffer for drawing. This can improve the performance in some cases (1 - 60%, i.e. repiditively bitmapping, drawing fucntions for a large area, etc.) in the cost, as you expect, RAM sacrifices. You can use it in the constructor like so:
     ```python
     st7789.ST7789(
@@ -40,6 +41,7 @@ rotations = (
 
 ## Firmware-updates
 Note: all firwares are compiled with the most recent micropython build at the time, if you want another version of micropython, please build it yourself following the build instruction provided below.
+- add BlackPill (no SPI-Flash version) firmwares. `.hex`, `.dfu` and `.bin` file available. Flashing guide please view [here](https://github.com/nspsck/STM32F411CEU6_BlackPill_Micropython/tree/main#how-to-flash). Building guide (as `USER_C_MODULES` for the `stm32` port) also view above.
 - rp2040 only: added the POV module as a built-in module to control core voltage. For details please visit: [RP2040_Micropython_voltage_control](https://github.com/nspsck/RP2040_Micropython_voltage_control).
 - esp32 and rp2: added a `drawbuffer` for more stable, sometimes faster drawing. All other buffer related operations will no longer need to collect RAM if this option is enabled, hence improved performance.
 - now suppports all display supported by the original driver by default. Set `reversed_backlight` to `True` to use "pull down displays".
@@ -109,20 +111,41 @@ for rotation 3 use offset(0, 0)
 ## Pre-compiled firmware files
 
 The firmware directory contains pre-compiled firmware for various devices with
-the st7789 C driver and frozen python font files. See the README.md file in the
-fonts folder for more information on the font files.
+the st7789 C driver and frozen python font files.
+The `BLACKPILL` firmware is rolled separately than the other versions and has 
+fewer fonts built-in due to limited sotrage space.
 
 MicroPython v1.21.0+ compiled with ESP IDF v5.0.2 using CMake
 
 Directory             | File            | Device
 --------------------- | --------------- | ----------------------------------
-GENERIC-7789          | micropython.bin | Generic ESP32 devices
-GENERIC_SPIRAM-7789   | micropython.bin | Generic ESP32 devices with SPI Ram
-GENERIC_C3            | micropython.bin | Generic ESP32-C3 devices
+ESP32_GENERIC         | micropython.bin | Generic ESP32 devices
+ESP32_GENERIC-SPIRAM  | micropython.bin | Generic ESP32 devices with SPI Ram
+ESP32_GENERIC_S2      | micropython.bin | Generic ESP32S3 devices
+ESP32_GENERIC_S3      | micropython.bin | Generic ESP32S3 devices
+ESP32_GENERIC_S3-SPIRAM  | micropython.bin | Generic ESP32S3 devices with SPI Ram
+ESP32_GENERIC_S3-SPIRAM_OCT | micropython.bin | Generic ESP32S3 devices with Octal-SPI Ram
+ESP32_GENERIC_C3      | micropython.bin | Generic ESP32-C3 devices
 LOLIN_S2_MINI         | micropython.bin | Wemos S2 mini
 Arduino_NANO_RP2040   | firmware.uf2    | Arduino nano RP2040 Connect
 RP2                   | firmware.uf2    | Raspberry Pi Pico RP2040
 RP2W                  | firmware.uf2    | Raspberry Pi PicoW RP2040
+WEACTSTUDIO           | firmware.uf2    | RP2040 by WEACTSTUDIO (16MB)
+BLACKPILL             | firmware.hex    | BlackPill by WEACTSTUDIO (No SPI-Flash)
+
+### Built-in fonts:
+For `BLACKPILL`:
+```
+NotoSans_32.py   astrol.py      vga1_16x32.py  vga1_8x8.py         vga1_bold_16x32.py
+NotoSerif_32.py  vga1_16x16.py  vga1_8x16.py   vga1_bold_16x16.py
+```
+For the others:
+```
+NotoSansMono_32.py     vga1_8x8.py       vga2_16x32.py       vga2_bold_16x32.py
+NotoSans_32.py         astrol.py         vga1_16x16.py       vga1_bold_16x16.py         
+NotoSerif_32.py        vga1_16x32.py     vga1_bold_16x32.py  vga2_8x8.py         
+vga2_8x16.py           vga1_8x16.py      vga2_16x16.py       vga2_bold_16x16.py
+```
 
 
 ## Additional Modules

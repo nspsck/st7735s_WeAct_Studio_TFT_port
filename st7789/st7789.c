@@ -39,7 +39,11 @@
 #include "py/runtime.h"
 #include "py/builtin.h"
 #include "py/mphal.h"
+#if MICROPY_VERSION >= 71168
+#include "extmod/modmachine.h"
+#else
 #include "extmod/machine_spi.h"
+#endif
 
 #include "mpfile.h"
 #include "st7789.h"

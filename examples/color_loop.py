@@ -10,8 +10,6 @@ except:
         c = ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | ((b & 0xF8) >> 3)
         return c
 
-machine.freq(240_000_000)
-
 def hsv2rgb(hue, sat, val):
     '''The conversion algorithm comes from https://blog.csdn.net/lly_3485390095/article/details/104570885'''
     C = 0.0
