@@ -14,7 +14,7 @@ TFA = 0
 BFA = 0
 
 def config(rotation=0, options=0):
-    return tft = st7789.ST7789(SPI(1, baudrate=30000000), # cs=A4, sck=A5, miso=A6, mosi=A7
+    return st7789.ST7789(SPI(1, baudrate=30000000), # cs=A4, sck=A5, miso=A6, mosi=A7
                   132,
                   162,
                   reset=Pin('A3', Pin.OUT),
