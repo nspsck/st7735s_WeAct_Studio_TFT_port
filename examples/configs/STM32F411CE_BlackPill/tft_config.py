@@ -21,8 +21,8 @@ def config(rotation=0, options=0):
                   cs=Pin('A4', Pin.OUT),
                   dc=Pin('A2', Pin.OUT),
                   backlight=Pin('A1', Pin.OUT),
-                  rotation=0,
-                  options=0,
+                  rotation=rotation,
+                  options=options,
                   use_drawbuffer=True, # This takes 40KB RAM.
                   reversed_backlight=True)
 
