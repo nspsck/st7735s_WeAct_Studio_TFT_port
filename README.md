@@ -7,7 +7,7 @@ I modified the original driver to specifically support the st7735s tft display s
 
 This driver supports all the features the original has. Some performance enhancement and new features has been done. Please read [Updates](#updates).
 
-## Known Issues:
+## Side note:
 - The st7735 display from WeAct Studio has a 132x162 st7735s controller, however, the displays resolution is 128x160, which leads to the result, that the visible drawing area is from top left (2, 1) to bottom right (129, 160) in x-th pixel. For example: `tft.pixel(2, 0)` shows nothing on the display, but it's registered in the controllers frame memory. `tft.pixel(2, 1)` light up the the most top left pixel. This is fixed using the custom rotation table, for that automatically to take effect, you still have to set the resolution to 132x162, but use it as a 128x160 display. This result the `tft.height()` and `tft.width()` yelds `160` and `128` respectively. Please keep that in Mind.
 ```
 rotations = (
