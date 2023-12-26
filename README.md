@@ -20,7 +20,7 @@ rotations = (
 
 ## Updates:
   - Added support for Micropython v1.22+
-  - Added an Option for you to use a static framebuffer for drawing. This can improve the performance in some cases (1 - 60%, i.e. repiditively bitmapping, drawing fucntions for a large area, etc.) in the cost, as you expect, RAM sacrifices. You can use it in the constructor like so:
+  - Added an Option for you to use a static framebuffer for drawing. This can improve the performance in some cases (1 - 60%, i.e. repiditively bitmapping, drawing fucntions for a large area, etc.) at the cost of, as you expect, RAM. You can use it in the constructor like so:
     ```python
     st7789.ST7789(
         SPI(1, baudrate=30000000, sck=Pin(36), mosi=Pin(35), miso=None),
