@@ -6,6 +6,10 @@
         "initializer_list": "c",
         "tjpgd565.h": "c",
         "st7789.h": "c",
-        "machine_spi.h": "c"
+        "machine_spi.h": "c",
+        "modmachine.h": "c",
+        "mpfile.h": "c",
+        "builtin.h": "c",
+        "obj.h": "c"
     }
 }

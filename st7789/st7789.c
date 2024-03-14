@@ -39,10 +39,16 @@
 #include "py/runtime.h"
 #include "py/builtin.h"
 #include "py/mphal.h"
+
 #if MICROPY_VERSION >= 71168
 #include "extmod/modmachine.h"
 #else
 #include "extmod/machine_spi.h"
+#endif
+
+#if MICROPY_VERSION >= MICROPY_MAKE_VERSION(1, 23, 0) // STATIC should be replaced with static.
+#undef STATIC   // This may become irrelevant later on.
+#define STATIC static
 #endif
 
 #include "mpfile.h"

@@ -29,6 +29,11 @@
 #include "py/runtime.h"
 #include "mpfile.h"
 
+#if MICROPY_VERSION >= MICROPY_MAKE_VERSION(1, 23, 0) // STATIC should be replaced with static.
+#undef STATIC   // This may become irrelevant later on.
+#define STATIC static
+#endif
+
 #include "extmod/vfs.h"
 
 #include <stdio.h>
