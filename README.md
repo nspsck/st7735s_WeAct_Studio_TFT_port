@@ -41,21 +41,12 @@ rotations = (
 
 ## Firmware-updates
 Note: all firwares are compiled with the most recent micropython build at the time, if you want another version of micropython, please build it yourself following the build instruction provided below.
-- add BlackPill (no SPI-Flash version) firmwares. `.hex`, `.dfu` and `.bin` file available. Flashing guide please view [here](https://github.com/nspsck/STM32F411CEU6_BlackPill_Micropython/tree/main#how-to-flash). Building guide (as `USER_C_MODULES` for the `stm32` port) also view above.
+- add BlackPill (no SPI-Flash version) firmwares. `.hex`, `.dfu` and `.bin` file available. Flashing guide and pre-built firmwares please view [here](https://github.com/nspsck/STM32F411CEU6_BlackPill_Micropython/tree/main#how-to-flash). Building guide (as `USER_C_MODULES` for the `stm32` port) also view above.
 - rp2040 only: added the POV module as a built-in module to control core voltage. For details please visit: [RP2040_Micropython_voltage_control](https://github.com/nspsck/RP2040_Micropython_voltage_control).
 - esp32 and rp2: added a `drawbuffer` for more stable, sometimes faster drawing. All other buffer related operations will no longer need to collect RAM if this option is enabled, hence improved performance.
 - now suppports all display supported by the original driver by default. Set `reversed_backlight` to `True` to use "pull down displays".
 - minor improvements on circle and fill_circle. (1-5% more performance depending on the situation) 
 - added firmwares compiled with the newest micropython version. (added 2 new functions: `fill_bubble_rect, bubble_rect`)
-### How to use the new firmwares on ESP32
-For esp32c3 and esp32s3, the `bootloader.bin` starts from `0x0`.
-```shell
-esptool.py --chip esp32c3 --port PORT_TO_YOUR_DEVICE --baud 460800 write_flash -z 0x0 .\bootloader.bin 0x8000 .\partition-table.bin 0x10000 .\micropython.bin
-```
-For esp32 and esp32s2, the `bootloader.bin` starts from `0x1000`.
-```shell
-esptool.py --chip esp32s2 --port PORT_TO_YOUR_DEVICE --baud 460800 write_flash -z 0x1000 .\bootloader.bin 0x8000 .\partition-table.bin 0x10000 .\micropython.bin
-```
 
 ## Display Configuration
 
@@ -137,7 +128,7 @@ BLACKPILL             | firmware.hex    | BlackPill by WEACTSTUDIO (No SPI-Flash
 For `BLACKPILL`:
 ```
 NotoSans_32.py   astrol.py      vga1_16x32.py  vga1_8x8.py         vga1_bold_16x32.py
-NotoSerif_32.py  vga1_16x16.py  vga1_8x16.py   vga1_bold_16x16.py
+vga1_16x16.py    vga1_8x16.py   vga1_bold_16x16.py
 ```
 For the others:
 ```
@@ -154,46 +145,6 @@ Module             | Source
 ------------------ | -----------------------------------------------------------
 axp202c            | https://github.com/lewisxhe/AXP202X_Libraries
 focaltouch         | https://gitlab.com/mooond/t-watch2020-esp32-with-micropython
-
-## Video Examples
-
-Example               | Video
---------------------- | -----------------------------------------------------------
-PYBV11 hello.py       | https://youtu.be/OtcERmad5ps
-PYBV11 scroll.py      | https://youtu.be/ro13rvaLKAc
-T-DISPLAY fonts.py    | https://youtu.be/2cnAhEucPD4
-T-DISPLAY hello.py    | https://youtu.be/z41Du4GDMSY
-T-DISPLAY scroll.py   | https://youtu.be/GQa-RzHLBak
-T-DISPLAY roids.py    | https://youtu.be/JV5fPactSPU
-TWATCH-2020 draw.py   | https://youtu.be/O_lDBnvH1Sw
-TWATCH-2020 hello.py  | https://youtu.be/Bwq39tuMoY4
-TWATCH-2020 bitmap.py | https://youtu.be/DgYzgnAW2d8
-TWATCH-2020 watch.py  | https://youtu.be/NItKb6umMc4
-
-This is a work in progress.
-
-## Thanks go out to:
-
-- https://github.com/devbis for the original driver this is based on.
-- https://github.com/hklang10 for letting me know of the new mp_raise_ValueError().
-- https://github.com/aleggon for finding the correct offsets for 240x240
-  displays and for discovering issues compiling STM32 ports.
-
--- Russ
-
-And am thankful to everyone metioned above and those who contributed to this project in any form!
-
-## Overview
-
-This is a driver for MicroPython to handle cheap displays based on the ST7789
-chip. The driver is written in C. Firmware is provided for ESP32, ESP32 with SPIRAM,
-pyboard1.1, and Raspberry Pi Pico devices.
-
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/russhughes/st7789_mpy/master/docs/ST7789.jpg" alt="ST7789 display photo"/>
-</p>
-
 
 # Setup MicroPython Build Environment in Ubuntu 20.04.2
 

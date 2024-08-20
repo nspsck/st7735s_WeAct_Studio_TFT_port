@@ -14,15 +14,29 @@ TFA = 0
 BFA = 0
 
 def config(rotation=0, options=0):
-    return st7789.ST7789(SPI(1, baudrate=30000000), # cs=A4, sck=A5, miso=A6, mosi=A7
+    """
+    For BlackPill:
+    
+    Fast SPI:
+    SPI1: cs=A4  sck=A5  mosi=A7  miso=A6
+    SPI4: cs=B12 sck=B13 mosi=A1  (miso=A11) # Do not use USART6 anymore.
+    SPI5: cs=B1  sck=B0  mosi=A10 (miso=A12) # Do not use USART1 anymore.
+    
+    Slow SPI:
+    SPI2: 
+    SPI3:
+    
+    """
+    return st7789.ST7789(SPI(5, baudrate=60000000), # cs=B1  sck=B0  mosi=A10
                   132,
                   162,
-                  reset=Pin('A3', Pin.OUT),
-                  cs=Pin('A4', Pin.OUT),
-                  dc=Pin('A2', Pin.OUT),
-                  backlight=Pin('A1', Pin.OUT),
+                  reset=Pin('B2', Pin.OUT),
+                  cs=Pin('B1', Pin.OUT),
+                  dc=Pin('A9', Pin.OUT),
+                  backlight=Pin('A8', Pin.OUT),
                   rotation=rotation,
                   options=options,
-                  use_drawbuffer=True, # This takes 40KB RAM.
+                  inversion=True,
+                  use_drawbuffer=False, # This takes 40KB RAM.
                   reversed_backlight=True)
 
